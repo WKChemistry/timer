@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>
+		Count Down Timer
+	</title>
+	<link rel="stylesheet" type="text/css" href="style.css" />
+</head>
+<body style="background-color:black">
+	
+	
+	
+	<div id="time" style="text-align:center; font-size:100px; color: white">
+
+	</div>
+	
+	<div id="chartdiv" style="height: 500px"></div>
+	
+	
+<script src="http://www.amcharts.com/lib/3/amcharts.js"></script>
+<script src="http://www.amcharts.com/lib/3/pie.js"></script>
+<script src="http://www.amcharts.com/lib/3/themes/light.js"></script>
+	<script>
+	
+var min, sec, msec;
+var setmin, dingtimer;
+var chart;
+	var ticktock = new Audio('http://www.wavlist.com/soundfx/020/clock-tick1.wav');
+	var ding = new Audio('http://soundjax.com/reddo/99652%5EDING1.mp3');
+	var minutealert = new Audio('http://soundjax.com/reddo/78601%5Eclock2.mp3');
+	var timesup = new Audio('http://cache.glujar.com/2180_9038_O103_2009_37/london-symphony-orchestra-greensleeves-xvi.mp3');	
+	window.onload = function(){
+
+		
+		min = 0; sec = 0; msec = 0;
+		var $_GET = {};
+		if(document.location.toString().indexOf('?') !== -1) {
+			var query = document.location
+						   .toString()
+						   // get the query string
+						   .replace(/^.*?\?/, '')
+						   // and remove any existing hash string (thanks, @vrijdenker) 
+						   .replace(/#.*$/, '')
+						   .split('&');
+
+			for(var i=0, l=query.length; i<l; i++) {
+			   var aux = decodeURIComponent(query[i]).split('=');
+			   $_GET[aux[0]] = aux[1];
+			}
+		}
+		setmin=min=$_GET['min'];
+		dingtimer=setmin*30;
+		reDraw();
+	}
+	
+	setInterval(function(){updateTime()},10);
+	
+
+
+	function updateTime(){
+		document.getElementById("time").innerHTML = getTime();
+
+	}
+	 
+	function getDate(now){
+		var date=now.toDateString();
+		return date;
+	}
+	
+
+	function PlaySound(which) {
+		which.play();
+	}
+	
+	function getTime(){
+		//if(min>6)min=6;
+		if (min<0){
+			timesup.loop = true;
+			timesup.play();
+			return "Times-up!!!"
+		}
+		else{
+			var time="";
+			msec-=1;
+			if (msec<0){msec=99;sec-=1;}
+			if (sec<0){sec=59;min-=1;}
+			
+			
+			if (msec==00&&min*60+sec==dingtimer){ding.play();dingtimer=Math.floor(dingtimer/2);}		
+			else if (sec==0){minutealert.volume = 0.005+(1.0 -(parseFloat(min)/ setmin ))/10;minutealert.play();}
+			else if (sec%10==0&&msec==99){ticktock.volume = (1.0 - ( parseFloat(sec + min * 60.0)/ (setmin * 60.0) )); ticktock.volume=Math.pow(ticktock.volume,13); ticktock.play(); /*alert(ticktock.volume);*/}
+
+			
+			time+=min+":";
+			time+=("0"+sec).slice(-2)+":";
+			time+=("0"+msec).slice(-2);
+			//time+='\n'+ticktock.volume;
+			reDraw();
+			return time;
+		}
+		
+
+	}
+	
+
+function reDraw(){
+chart = AmCharts.makeChart( "chartdiv", {
+	"type": "pie",
+	"balloonText": "[[title]]<br><span style='font-size:14px'><b>[[value]]</b> ([[percents]]%)</span>",
+	"pullOutRadius": "0%",
+	"startRadius": "0%",
+	"baseColor": "#ACAC0D",
+	"colors": [],
+	"gradientRatio": [
+		0
+	],
+	"hoverAlpha": 0,
+	"labelTickAlpha": 0,
+	"outlineThickness": 0,
+	"pullOutDuration": 0,
+	"pullOutEffect": "easeOutSine",
+	"startDuration": 0,
+	"startEffect": "easeOutSine",
+	"titleField": "country",
+	"valueField": "litres",
+	"fontSize": 12,
+	"pathToImages": "http://cdn.amcharts.com/lib/3/images/",
+	"percentPrecision": 5,
+	"theme": "black",
+	"allLabels": [],
+	"balloon": {},
+	"titles": [],
+	"dataProvider": [
+		{
+			"country": "Time Used",
+			"litres": (setmin*60)-(sec + min * 60.0),
+		},
+		{
+			"country": "Time Remaining",
+			"litres": (sec + min * 60.0)
+		}
+	]
+} );
+}
+	</script>
+
+</body>
+</html>
